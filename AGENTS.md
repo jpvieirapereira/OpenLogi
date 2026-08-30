@@ -28,6 +28,7 @@ devices directly.
 | `crates/openlogi-device-registry` | Pure hardware identity registry: receiver protocols and standalone-device driver metadata |
 | `crates/openlogi-hidpp` | Vendored fork of the `hidpp` protocol crate (**lib name `hidpp`**, 0BSD) |
 | `crates/openlogi-hidpp-derive` | Derive macros used by the HID++ hard fork; changes share the hidpp lint and rustdoc contract |
+| `crates/openlogi-fixture` | Host-free fixture schemas, synthetic identity policy, canonical semantic data, and privacy/relationship verification |
 | `crates/openlogi-device` | The HID++ device layer: enumeration, probing, writes, sessions, pairing. Knows no host — expressed against `HidBackend` |
 | `crates/openlogi-hid` | That layer wired to this host: `async-hid` transport, macOS Input Monitoring, the on-disk probe cache |
 | `crates/openlogi-assets` | Device-render registry + cached fetch from OpenLogi asset mirrors |

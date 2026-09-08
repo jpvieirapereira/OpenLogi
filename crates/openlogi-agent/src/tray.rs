@@ -445,7 +445,7 @@ fn build_menu(mtm: MainThreadMarker, target: &MenuTarget) -> Retained<objc2_app_
 
     let show = status_item::new_action_item(
         mtm,
-        &rust_i18n::t!("Show Main Window"),
+        &rust_i18n::t!("app.show_main_window"),
         sel!(openOpenLogi:),
         target,
         "m",
@@ -455,7 +455,7 @@ fn build_menu(mtm: MainThreadMarker, target: &MenuTarget) -> Retained<objc2_app_
 
     let settings = status_item::new_action_item(
         mtm,
-        &rust_i18n::t!("Settings…"),
+        &rust_i18n::t!("app.settings_dialog"),
         sel!(openSettings:),
         target,
         ",",
@@ -463,7 +463,7 @@ fn build_menu(mtm: MainThreadMarker, target: &MenuTarget) -> Retained<objc2_app_
     menu.addItem(&settings);
     let about = status_item::new_action_item(
         mtm,
-        &rust_i18n::t!("About OpenLogi"),
+        &rust_i18n::t!("about.about_openlogi"),
         sel!(openAbout:),
         target,
         "",
@@ -471,7 +471,7 @@ fn build_menu(mtm: MainThreadMarker, target: &MenuTarget) -> Retained<objc2_app_
     menu.addItem(&about);
     let updates = status_item::new_action_item(
         mtm,
-        &rust_i18n::t!("Check for Updates…"),
+        &rust_i18n::t!("updates.check_for_updates_dialog"),
         sel!(checkForUpdates:),
         target,
         "u",
@@ -481,14 +481,14 @@ fn build_menu(mtm: MainThreadMarker, target: &MenuTarget) -> Retained<objc2_app_
 
     let quit = status_item::new_action_item(
         mtm,
-        &rust_i18n::t!("Quit OpenLogi"),
+        &rust_i18n::t!("app.quit_openlogi"),
         sel!(quitOpenLogi:),
         target,
         "q",
     );
     if let Some(image) = NSImage::imageWithSystemSymbolName_accessibilityDescription(
         &NSString::from_str("xmark.square"),
-        Some(&NSString::from_str(&rust_i18n::t!("Quit OpenLogi"))),
+        Some(&NSString::from_str(&rust_i18n::t!("app.quit_openlogi"))),
     ) {
         image.setTemplate(true);
         quit.setImage(Some(&image));
@@ -502,8 +502,14 @@ mod tests {
     use super::*;
     use openlogi_hid::device_io_channel;
 
+    // Both tests post to the process-wide NSWorkspace notification center.
+    // Keep each observer's entire registration/posting/removal lifetime isolated
+    // so one test's session-inactive event cannot suspend the other test's gate.
+    static WORKSPACE_NOTIFICATIONS: Mutex<()> = Mutex::new(());
+
     #[test]
     fn overlapping_suspend_sources_all_clear_before_device_io_resumes() {
+        let _notifications = WORKSPACE_NOTIFICATIONS.lock().unwrap();
         let (signal, gate) = device_io_channel();
         let target = install_activity_observer(signal);
         target.finish_startup(false);
@@ -558,6 +564,7 @@ mod tests {
 
     #[test]
     fn startup_stays_suspended_when_the_display_is_already_asleep() {
+        let _notifications = WORKSPACE_NOTIFICATIONS.lock().unwrap();
         let (signal, gate) = device_io_channel();
         let target = install_activity_observer(signal);
         assert!(!gate.allows_io(), "startup must fail closed");
